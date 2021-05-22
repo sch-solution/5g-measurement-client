@@ -4,6 +4,9 @@
   "description": "Client app for 5G measurement project",
   "main": "app.js",
   "dependencies": {
+    "axios": "^0.21.1",
+    "request": "^2.88.2",
+    "set-cookie-parser": "^2.4.8",
     "ws": "^7.4.5"
   },
   "devDependencies": {
