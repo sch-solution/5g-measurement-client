@@ -2,11 +2,7 @@ import asyncio
 import pathlib
 import ssl
 import websocket
-
-try:
-    import thread
-except ImportError:
-    import _thread as thread
+import _thread as thread
 import time
 
 def on_message(ws, message):
