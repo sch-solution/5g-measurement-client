@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+	<head>
+
+	</head>
+	<body>
+		<button onclick="refreshDevices();">Obnovit</button>
+		<div id="deviceList">
+
+		</div>
+	</body>
+	<script>
+		function deviceHtml(clientId){
+			html = '<div style="border: 1px solid black">';
+			html +='<h3>'+clientId+'</h3>';
+			html +='<input type="text">';
+			html +='<input type="submit" value="Odeslat" data-clientId="'+clientId+'" onclick="sendMessage(this);">';
+			html +='</div>'
+			return html;
+		}
+
+		async function refreshDevices(){
+			fetch('https://ws.5g.schsolution.cz/devices/get')
+			.then(response => response.json())
+			.then((devices) => {
+				//console.log(devices);
+				html = "";
+				devices.map.forEach((device, html)=>{
+					device = device[1];
+					html += deviceHtml(device.clientId);
+				});
+				let list = document.getElementById('deviceList');
+				list.innerHTML=html;
+			});
+		}
+
+		function sendMessage(element){
+			const clientId = element.getAttribute('data-clientId');
+			const message = element.previousSibling.value;
+			fetch('https://ws.5g.schsolution.cz/message', {
+				method: 'POST',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify({
+					clientId: clientId,
+					message: message
+				})
+			});
+		}
+	</script>
+</html>

@@ -85,7 +85,11 @@ async function run(){
 
 
 function handleMessage(message){
-	
+	if(message == 'measure'){
+		//run iperf
+	} else {
+		//do samsing els
+	}
 }
 
 
