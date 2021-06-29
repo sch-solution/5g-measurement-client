@@ -15,12 +15,14 @@
 			html +='<h3>'+clientId+'</h3>';
 			html +='<input type="text">';
 			html +='<input type="submit" value="Odeslat" data-clientId="'+clientId+'" onclick="sendMessage(this);">';
+			html +='<input type="submit" value="Vyměřit" data-clientId="'+clientId+'" onclick="sendMeasureCommand(this);">';
+			html +='<div style="background-image: url(https://icon-library.com/images/loading-icon-transparent-background/loading-icon-transparent-background-12.jpg);width:50px;height:50px;background-size:cover;margin:5px;opacity:0"></div>';
 			html +='</div>'
 			return html;
 		}
 
 		async function refreshDevices(){
-			fetch('https://ws.5g.schsolution.cz/devices/get')
+			fetch('https://ws.5g.schsolution.cz/api/devices/get')
 			.then(response => response.json())
 			.then((devices) => {
 				//console.log(devices);
@@ -37,13 +39,28 @@
 		function sendMessage(element){
 			const clientId = element.getAttribute('data-clientId');
 			const message = element.previousSibling.value;
-			fetch('https://ws.5g.schsolution.cz/message', {
+			fetch('https://ws.5g.schsolution.cz/api/message', {
 				method: 'POST',
 				headers: {'Content-Type': 'application/json'},
 				body: JSON.stringify({
 					clientId: clientId,
 					message: message
 				})
+			});
+		}
+
+		function sendMeasureCommand(element){
+			const loadingCircle = element.nextSibling;
+			loadingCircle.style.opacity = 1;
+			const clientId = element.getAttribute('data-clientId');
+			fetch('https://ws.5g.schsolution.cz/api/measure', {
+				method: 'GET',
+				headers: {'Content-Type': 'application/json'},
+				body: JSON.stringify({
+					clientId: clientId
+				})
+			}).then(()=>{
+				loadingCircle.style.opacity = 0;
 			});
 		}
 	</script>

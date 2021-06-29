@@ -1,27 +1,14 @@
 const http = require('https');
 const websocket = require('ws');
 const axios = require('axios');
-const setCookieParser = require('set-cookie-parser');
 const { exit } = require('process');
 
-let ws, relogInterval;
-
-let cookieStorage = {}, myInfo;
-cookieStorage.stringify = function(){
-	let returnString = '';
-	if(this.hasOwnProperty('cookies')){
-		this.cookies.forEach(cookie=>{
-			returnString += cookie.name+'='+cookie.value+'; ';
-		});
-	}
-	return returnString;
-}
+let ws, relogInterval, accessToken;
 
 
-async function login(host, port, path, username, password){
+async function login(host, port, path, token){
 	const postData = {
-		username: username,
-		password: password
+		token
 	};
 	const postUrl = 'https://'+host+':'+port+path;
 	const response = await axios({
@@ -35,7 +22,7 @@ async function login(host, port, path, username, password){
 	if(response.data.status === 'logged'){
 
 		myInfo = response.data.device;
-		cookieStorage.cookies = setCookieParser.parse(response, {decodeValues: true});
+		accessToken = response.data.accessToken;
 		
 	} else {
 
@@ -44,12 +31,13 @@ async function login(host, port, path, username, password){
 
 async function connectToWebsocket(){
 	try {
-		await login('ws.5g.schsolution.cz', 443, '/login', '1000', '1000');
+		await login('ws.5g.schsolution.cz', 443, '/auth/login', 'abcdef');
 		try {
-			ws = new websocket('wss://ws.5g.schsolution.cz', {headers: {Cookie: cookieStorage.stringify()}});
+			ws = new websocket('wss://ws.5g.schsolution.cz', {headers: {authentication: accessToken}});
 			ws.on('open', () => {
 				clearInterval(relogInterval);
 				console.log('Connection established');
+				ws.send(JSON.stringify({type: 'measurement-result', data: { d: 'asd'}}));
 			})
 			.on('close', () => {
 				console.log('Connection closed');
@@ -68,7 +56,7 @@ async function connectToWebsocket(){
 				console.log(data);
 			});
 		} catch (message){
-			console.log('Websocket error');
+			console.log('Websocket error: '+message);
 		}
 	} catch (error) {
 		console.log('Axios error');
