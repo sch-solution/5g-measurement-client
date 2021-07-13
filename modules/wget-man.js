@@ -9,7 +9,8 @@
 
  function runTest(host){
 	 let command = "wget -O /dev/null ";
-	 command += host? ('-c ' + host + ' '):'';
+	 command += host? (host + ' '):'';
+	 //command += '2>&1 | grep -o "[0-9.]\+ [KM]*B/s"';
 	 return shell.exec(command);
  }
  
