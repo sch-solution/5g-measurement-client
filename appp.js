@@ -84,7 +84,18 @@ async function handleMessage(message){
 
 		switch(messageData.type){
 			case 'gpsLocation':
-				ws.send(JSON.stringify({type: 'gpsLocation', data: {testType: messageData.data.forTestType,lat:  getRandomInRange(-90,90,3), lon:  getRandomInRange(-180,180,3)}}));
+				ws.send(JSON.stringify({type: 'gpsLocation', data: {testType: messageData.data.forTestType,result:{
+
+					latitude: getRandomInRange(-90,90,8),
+					longitude: getRandomInRange(-180,180,8),
+					altitude: getRandomInRange(0,100,12),
+					accuracy: getRandomInRange(10,20,14),
+					vertical_accuracy: getRandomInRange(10,20,14),
+					bearing: 0.0,
+					speed: getRandomInRange(0,5,1),
+					elapsedMs: getRandomInRange(10,100,0),
+					provider: "gps"
+				}}}));
 				break;
 			
 			case 'connectionType':
