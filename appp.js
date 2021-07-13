@@ -9,6 +9,7 @@ const curlManager = require('./modules/curl-man');
 const pingManager = require('./modules/ping-man');
 const tracerouteManager = require('./modules/traceroute-man');
 const shell = require('./modules/shell-man');
+const gpsManager = require('./modules/gps-man');
 
 let ws, relogInterval, accessToken, testOptions;
 
@@ -84,7 +85,10 @@ async function handleMessage(message){
 
 		switch(messageData.type){
 			case 'gpsLocation':
-				ws.send(JSON.stringify({type: 'gpsLocation', data: {testType: messageData.data.forTestType,lat:  getRandomInRange(-90,90,3), lon:  getRandomInRange(-180,180,3)}}));
+				gpsManager.runTest()
+				.then(result=>{
+					ws.send(JSON.stringify({type: 'gpsLocation', data: {testType: messageData.data.forTestType,result}}));
+				});
 				break;
 			
 			case 'connectionType':
