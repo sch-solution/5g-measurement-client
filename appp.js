@@ -10,6 +10,7 @@ const pingManager = require('./modules/ping-man');
 const tracerouteManager = require('./modules/traceroute-man');
 const shell = require('./modules/shell-man');
 const gpsManager = require('./modules/gps-man');
+const cellManager = require('./modules/cell-man');
 
 let ws, relogInterval, accessToken, testOptions;
 
@@ -65,6 +66,7 @@ async function connectToWebsocket(){
 		} catch (message){
 			console.log('Websocket error: '+message);
 		}
+		
 	} catch (error) {
 		console.log('Axios error');
 	}
@@ -87,12 +89,20 @@ async function handleMessage(message){
 			case 'gpsLocation':
 				gpsManager.runTest()
 				.then(result=>{
-					ws.send(JSON.stringify({type: 'gpsLocation', data: {testType: messageData.data.forTestType,result}}));
+					ws.send(JSON.stringify({type: 'gpsLocation', data: {testType: messageData.data.forTestType,result: JSON.parse(result)}}));
 				});
 				break;
 			
-			case 'connectionType':
-				ws.send(JSON.stringify({type: 'connectionType', data: {testType: messageData.data.forTestType,connectionType:'5G'}}));
+			// case 'connectionType':
+			// 	ws.send(JSON.stringify({type: 'connectionType', data: {testType: messageData.data.forTestType,connectionType:'5G'}}));
+			// 	break;
+			
+			case 'connectionType': // cellinfo 
+				cellManager.runTest()
+				.then(result=>{
+					// console.log(JSON.stringify({type: 'connectionType', data: {testType: messageData.data.forTestType,connectionType: JSON.parse(result)}}));
+					ws.send(JSON.stringify({type: 'connectionType', data: {testType: messageData.data.forTestType,connectionType: JSON.parse(result)}}));
+				});
 				break;
 			
 			case 'ping':
