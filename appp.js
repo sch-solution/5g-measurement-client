@@ -9,6 +9,8 @@ const curlManager = require('./modules/curl-man');
 const pingManager = require('./modules/ping-man');
 const tracerouteManager = require('./modules/traceroute-man');
 const shell = require('./modules/shell-man');
+const gpsManager = require('./modules/gps-man');
+const cellManager = require('./modules/cell-man');
 
 let ws, relogInterval, accessToken, testOptions;
 
@@ -97,39 +99,43 @@ async function handleMessage(message){
 				new Promise((resolve, reject)=>{
 					switch(payload.handler){
 						case 'gpsLocation':
-							responseMessage = {
-								handler: 'gpsLocation',
-								testType: payload.forTestType,
-								options: payload.options,
-								data: {
-									result:{
-										latitude: getRandomInRange(-90,90,8),
-										longitude: getRandomInRange(-180,180,8),
-										altitude: getRandomInRange(0,100,12),
-										accuracy: getRandomInRange(10,20,14),
-										vertical_accuracy: getRandomInRange(10,20,14),
-										bearing: 0.0,
-										speed: getRandomInRange(0,5,1),
-										elapsedMs: getRandomInRange(10,100,0),
-										provider: "gps"
+							gpsManager.runTest().then(result=>{
+								responseMessage = {
+									handler: 'gpsLocation',
+									testType: payload.forTestType,
+									options: payload.options,
+									data: {
+										result: JSON.parse(result)
+										
+										/*{
+											latitude: getRandomInRange(-90,90,8),
+											longitude: getRandomInRange(-180,180,8),
+											altitude: getRandomInRange(0,100,12),
+											accuracy: getRandomInRange(10,20,14),
+											vertical_accuracy: getRandomInRange(10,20,14),
+											bearing: 0.0,
+											speed: getRandomInRange(0,5,1),
+											elapsedMs: getRandomInRange(10,100,0),
+											provider: "gps"
+										}*/
 									}
-								}
-							};
-							resolve(responseMessage);
+								};
+								resolve(responseMessage);
+							});
 						break;
 	
 						case 'connectionType':
-							responseMessage = {
-								handler: 'connectionType',
-								testType: payload.forTestType,
-								options: payload.options,
-								data: {
-									result: {
-										connectionType:'5G'
+							cellManager.runTest().then(result=>{
+								responseMessage = {
+									handler: 'connectionType',
+									testType: payload.forTestType,
+									options: payload.options,
+									data: {
+										result: JSON.parse(result)
 									}
-								}
-							};
-							resolve(responseMessage);
+								};
+								resolve(responseMessage);
+							});
 						break;
 	
 						case 'ping':

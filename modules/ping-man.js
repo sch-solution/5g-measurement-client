@@ -2,8 +2,8 @@
 
  function runTest(host, count){
 	 let command = "ping ";
-	 command += host + " "; 
 	 command += count? ('-c ' + count + ' '):'';
+	 command += host + " "; 
 	 return shell.exec(command);
  }
  
