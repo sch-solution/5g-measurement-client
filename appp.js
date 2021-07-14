@@ -86,113 +86,187 @@ async function handleMessage(message){
 		const messageData = JSON.parse(message);
 
 		switch(messageData.type){
-			case 'gpsLocation':
-				gpsManager.runTest()
-				.then(result=>{
-					ws.send(JSON.stringify({type: 'gpsLocation', data: {testType: messageData.data.forTestType,result: JSON.parse(result)}}));
-				});
-				break;
 			
-			// case 'connectionType':
-			// 	ws.send(JSON.stringify({type: 'connectionType', data: {testType: messageData.data.forTestType,connectionType:'5G'}}));
-			// 	break;
-			
-			case 'connectionType': // cellinfo 
-				cellManager.runTest()
-				.then(result=>{
-					// console.log(JSON.stringify({type: 'connectionType', data: {testType: messageData.data.forTestType,connectionType: JSON.parse(result)}}));
-					ws.send(JSON.stringify({type: 'connectionType', data: {testType: messageData.data.forTestType,connectionType: JSON.parse(result)}}));
-				});
-				break;
-			
-			case 'ping':
-				pingManager.runTest(messageData.data.host, 10)
-				.then(result=>{
-					ws.send(JSON.stringify({type: 'ping', data: {testType: messageData.data.forTestType,ping: result}}));
-				});
-				break;
-			
-			case 'traceroute':
-				tracerouteManager.runTest(messageData.data.host)
-				.then(result=>{
-					ws.send(JSON.stringify({type: 'traceroute', data: {testType: messageData.data.forTestType,traceroute: result}}));
-				});
-				break;
-
-			case 'wget':
-
-				break;
-
-			case 'curl-upload':
-				if(messageData.data.command == 'prepare'){
-					testOptions = {};
-					testOptions.host = messageData.data.url;
-					testOptions.fileSize = sizeIsAllowed(messageData.data.fileSize)? messageData.data.fileSize : '500M';
-					testOptions.fileDirName = __dirname+'/tmp/';
-					testOptions.fileName = uuid.generate();
-
-
-					fs.readdir(testOptions.fileDirName, (err, files)=>{
-							files.forEach(file=>{
-								if(file != '.gitignore'){
-									fs.unlinkSync(testOptions.fileDirName + '/' + file);
-								}
-							});
-						}
-					);
-
-					shell.exec('truncate -s '+testOptions.fileSize+' '+testOptions.fileDirName+testOptions.fileName)
-					.then(()=>{
-						ws.send(createMesssage('curl-upload', {status: 'ready'}));
-					});
-					
-				} else if (messageData.data.command == 'run'){
-					const beginTime = new Date();
-
-					curlManager.runUploadTest(testOptions.host, testOptions.fileDirName+testOptions.fileName)
-					.then(speed=>{
-						ws.send(createMesssage('curl-upload', {status: 'result', result: speed, fileSize: testOptions.fileSize, beginTime, endTime: new Date()}));
-					});
-					
-					
-				}
-				break;
-
-			case 'curl-download':
-				if(messageData.data.command == 'prepare'){
-					testOptions = {};
-					testOptions.host = messageData.data.url;
-					testOptions.fileSize = messageData.data.fileSize;
-
-					ws.send(createMesssage('curl-download', {status: 'ready'}));
-					
-				} else if (messageData.data.command == 'run'){
-					const beginTime = new Date();
-
-					curlManager.runDownloadTest(testOptions.host, testOptions.fileDirName+testOptions.fileName)
-					.then(speed=>{
-						ws.send(createMesssage('curl-download', {status: 'result', result: speed, fileSize: testOptions.fileSize, beginTime, endTime: new Date()}));
-					});
-					
-					
-				}
-				break;
-
-			case 'iperf':
-
-				break;
-
 			case 'error':
 				console.log('received error message: ^^^^^^');
-				break;
+			break;
 
 			case 'info':
 				//console.log('received info message: ' + messageData.data.message);
-				break;
+			break;
+
+			case 'request':
+				const { payload } = messageData;
+				new Promise((resolve, reject)=>{
+					switch(payload.handler){
+						case 'gpsLocation':
+							gpsManager.runTest().then(result=>{
+								responseMessage = {
+									handler: 'gpsLocation',
+									testType: payload.forTestType,
+									options: payload.options,
+									data: {
+										result: JSON.parse(result)
+										
+										/*{
+											latitude: getRandomInRange(-90,90,8),
+											longitude: getRandomInRange(-180,180,8),
+											altitude: getRandomInRange(0,100,12),
+											accuracy: getRandomInRange(10,20,14),
+											vertical_accuracy: getRandomInRange(10,20,14),
+											bearing: 0.0,
+											speed: getRandomInRange(0,5,1),
+											elapsedMs: getRandomInRange(10,100,0),
+											provider: "gps"
+										}*/
+									}
+								};
+								resolve(responseMessage);
+							});
+						break;
+	
+						case 'connectionType':
+							cellManager.runTest().then(result=>{
+								responseMessage = {
+									handler: 'connectionType',
+									testType: payload.forTestType,
+									options: payload.options,
+									data: {
+										result: JSON.parse(result)
+									}
+								};
+								resolve(responseMessage);
+							});
+						break;
+	
+						case 'ping':
+							pingManager.runTest(payload.options.host, 10)
+							.then(result=>{
+								responseMessage = {
+									handler: 'ping',
+									testType: payload.forTestType,
+									options: payload.options,
+									data: {
+										result
+									}
+								};
+								resolve(responseMessage);
+							});
+						break;
+
+						case 'traceroute':
+							tracerouteManager.runTest(payload.options.host)
+							.then(result=>{
+								responseMessage = {
+									handler: 'traceroute',
+									testType: payload.forTestType,
+									options: payload.options,
+									data: {
+										result
+									}
+								};
+								resolve(responseMessage);
+							});
+						break;
+
+						case 'curl-upload':
+							if(payload.command == 'prepare'){
+								testOptions = {};
+								testOptions.host = payload.options.url;
+								testOptions.fileSize = sizeIsAllowed(payload.options.fileSize)? payload.options.fileSize : '500M';
+								payload.options.fileSize = testOptions.fileSize;
+								testOptions.fileDirName = __dirname+'/tmp/';
+								testOptions.fileName = uuid.generate();
+
+								fs.readdir(testOptions.fileDirName, (err, files)=>{
+										files.forEach(file=>{
+											if(file != '.gitignore'){
+												fs.unlinkSync(testOptions.fileDirName + '/' + file);
+											}
+										});
+									}
+								);
+
+								shell.exec('truncate -s '+testOptions.fileSize+' '+testOptions.fileDirName+testOptions.fileName)
+								.then(()=>{
+									responseMessage = {
+										handler: 'curl-upload',
+										testType: payload.forTestType,
+										options: payload.options,
+										status: 'ready'
+									};
+									resolve(responseMessage);
+								});
+								
+							} else if (payload.command == 'run'){
+								const beginTime = new Date();
+
+								curlManager.runUploadTest(testOptions.host, testOptions.fileDirName+testOptions.fileName)
+								.then(speed=>{
+									responseMessage = {
+										handler: 'curl-upload',
+										testType: payload.forTestType,
+										options: payload.options,
+										status: 'done',
+										data: {
+											result: speed,
+											fileSize: testOptions.fileSize,
+											beginTime,
+											endTime: new Date()
+										}
+									};
+									resolve(responseMessage);
+								});
+							}
+						break;
+						
+						case 'curl-download':
+							if(payload.command == 'prepare'){
+								testOptions = {};
+								testOptions.host = payload.options.url;
+								testOptions.fileSize = payload.options.fileSize;
+								responseMessage = {
+									handler: 'curl-download',
+									testType: payload.forTestType,
+									options: payload.options,
+									status: 'ready'
+								}
+								resolve(responseMessage);
+								
+							} else if (payload.command == 'run'){
+								const beginTime = new Date();
+
+								curlManager.runDownloadTest(testOptions.host, testOptions.fileDirName+testOptions.fileName)
+								.then(speed=>{
+									responseMessage = {
+										handler: 'curl-download',
+										testType: payload.forTestType,
+										options: payload.options,
+										status: 'done',
+										data: {
+											result: speed,
+											fileSize: testOptions.fileSize,
+											beginTime,
+											endTime: new Date()
+										}
+									}
+									resolve(responseMessage);
+								});
+							}
+						break;
+						
+						case 'iperf':
+
+						break;
+					}
+				}).then(responseMessage=>{
+					ws.send(createResponse(messageData.requestId, responseMessage));
+				});
+			break;
 
 			default:
 				console.log('unknown message type');
-				break;
+			break;
 		}
 	} catch(error) {
 		console.log(error);
@@ -207,6 +281,16 @@ function createMesssage(type, payload){
 		type: type,
 		data: payload
 	};
+	return JSON.stringify(message);
+}
+
+function createResponse(requestId, payload){
+	message = {
+		authToken: accessToken,
+		type: 'response',
+		requestId,
+		payload
+	}
 	return JSON.stringify(message);
 }
 

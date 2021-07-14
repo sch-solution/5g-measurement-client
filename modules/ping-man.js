@@ -3,7 +3,7 @@
  function runTest(host, count){
 	 let command = "ping ";
 	 command += count? ('-c ' + count + ' '):'';
-   command += host + " "; 
+	 command += host + " "; 
 	 return shell.exec(command);
  }
  
