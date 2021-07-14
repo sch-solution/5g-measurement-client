@@ -66,6 +66,7 @@ async function connectToWebsocket(){
 		} catch (message){
 			console.log('Websocket error: '+message);
 		}
+		
 	} catch (error) {
 		console.log('Axios error');
 	}
@@ -262,8 +263,6 @@ async function handleMessage(message){
 					ws.send(createResponse(messageData.requestId, responseMessage));
 				});
 			break;
-
-
 
 			default:
 				console.log('unknown message type');
