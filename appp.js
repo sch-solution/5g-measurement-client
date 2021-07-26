@@ -11,6 +11,7 @@ const tracerouteManager = require('./modules/traceroute-man');
 const shell = require('./modules/shell-man');
 const gpsManager = require('./modules/gps-man');
 const cellManager = require('./modules/cell-man');
+const connectionInfoManager = require('./modules/conn-info-man');
 
 let ws, relogInterval, accessToken, testOptions;
 
@@ -129,6 +130,20 @@ async function handleMessage(message){
 							cellManager.runTest().then(result=>{
 								responseMessage = {
 									handler: 'connectionType',
+									testType: payload.forTestType,
+									options: payload.options,
+									data: {
+										result: JSON.parse(result)
+									}
+								};
+								resolve(responseMessage);
+							});
+						break;
+	
+						case 'connectionInfo':
+							connectionInfoManager.runTest().then(result=>{
+								responseMessage = {
+									handler: 'connectionInfo',
 									testType: payload.forTestType,
 									options: payload.options,
 									data: {
