@@ -51,6 +51,7 @@ async function connectToWebsocket(){
 			.on('close', () => {
 				console.log('Connection closed');
 				//-----------------------------------------------------------------------------------------------------------------
+				clearInterval(relogInterval);
 				relogInterval = setInterval(() => {
 					console.log('trying to connect..');
 					connectToWebsocket();
@@ -74,6 +75,7 @@ async function connectToWebsocket(){
 }
 
 async function run(){
+	clearInterval(relogInterval);
 	relogInterval = setInterval(() => {
 		console.log('trying to connect..');
 		connectToWebsocket();
