@@ -330,10 +330,11 @@ function sizeIsAllowed(size){
 }
 
 function JSONParse(jsonString){
+	let rtn;
 	try {
-		let rtn = JSON.parse(jsonString);
+		rtn = JSON.parse(jsonString);
 	} catch (err){
-		let rtn = {
+		rtn = {
 			error: 'json parse error',
 			jsonString
 		};
