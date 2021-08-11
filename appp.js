@@ -109,7 +109,7 @@ async function handleMessage(message){
 									testType: payload.forTestType,
 									options: payload.options,
 									data: {
-										result: JSON.parse(result)
+										result: JSONParse(result)
 										
 										/*{
 											latitude: getRandomInRange(-90,90,8),
@@ -135,7 +135,7 @@ async function handleMessage(message){
 									testType: payload.forTestType,
 									options: payload.options,
 									data: {
-										result: JSON.parse(result)
+										result: JSONParse(result)
 									}
 								};
 								resolve(responseMessage);
@@ -149,7 +149,7 @@ async function handleMessage(message){
 									testType: payload.forTestType,
 									options: payload.options,
 									data: {
-										result: JSON.parse(result)
+										result: JSONParse(result)
 									}
 								};
 								resolve(responseMessage);
@@ -327,6 +327,19 @@ function sizeIsAllowed(size){
 	];
 
 	return sizes.includes(size);
+}
+
+function JSONParse(jsonString){
+	try {
+		let rtn = JSON.parse(jsonString);
+	} catch (err){
+		let rtn = {
+			error: 'json parse error',
+			jsonString
+		};
+	}
+
+	return rtn;
 }
 
 run();
