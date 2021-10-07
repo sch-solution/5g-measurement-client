@@ -282,7 +282,7 @@ async function handleMessage(message){
 			break;
 
 			case 'echo':
-				console.log("ECHO MESSAGE-------------------\n\n"+ messageData.payload.message+"\n\n");
+				console.log("ECHO MESSAGE-------------------\n\n"+ messageData.message+"\n\n");
 			break;
 
 			default:
