@@ -281,6 +281,10 @@ async function handleMessage(message){
 				});
 			break;
 
+			case 'echo':
+				console.log("ECHO MESSAGE-------------------\n\n"+ messageData.payload.message+"\n\n");
+			break;
+
 			default:
 				console.log('unknown message type');
 			break;
