@@ -157,7 +157,7 @@ async function handleMessage(message){
 						break;
 	
 						case 'ping':
-							pingManager.runTest(payload.options.host, 10)
+							pingManager.runTest(payload.options.host, payload.options.count)
 							.then(result=>{
 								responseMessage = {
 									handler: 'ping',
